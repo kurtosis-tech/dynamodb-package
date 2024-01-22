@@ -1,23 +1,34 @@
-# NOTE: If you're a VSCode user, you might like our VSCode extension: https://marketplace.visualstudio.com/items?itemName=Kurtosis.kurtosis-extension
+NAME = "dynamodb"
+IMAGE = "instructure/dynamo-local-admin"
+SERVER_PORT = 8000
 
-# Importing the Postgres package from the web using absolute import syntax
-# See also: https://docs.kurtosis.com/starlark-reference/import-module
-postgres = import_module("github.com/kurtosis-tech/postgres-package/main.star")
+def run(plan):
+    """
+    Spins up AWS dynamodb.
+    """
+    get_recipe = GetHttpRequestRecipe(
+        port_id = "server",
+        endpoint = "/create-table",
+    )
 
-# Importing a file inside this package using relative import syntax
-# See also: https://docs.kurtosis.com/starlark-reference/import-module
-lib = import_module("./lib/lib.star")
+    ready_conditions_config = ReadyCondition(
+        recipe = get_recipe,
+        field = "code",
+        assertion = "==",
+        target_value = 200,
+        interval = "2s",
+        timeout = "10s",
+    )
 
-# For more information on...
-#  - the 'run' function:  https://docs.kurtosis.com/concepts-reference/packages#runnable-packages
-#  - the 'plan' object:   https://docs.kurtosis.com/starlark-reference/plan
-#  - arguments:           https://docs.kurtosis.com/run#arguments
-def run(plan, name = "John Snow"):
-    plan.print("Hello, " + name)
+    service_config= ServiceConfig(
+        image = IMAGE,
+        ports = {
+            "server": PortSpec(number = SERVER_PORT, transport_protocol = "TCP")
+        },
+        ready_conditions=ready_conditions_config,
+    )
 
-    # https://docs.kurtosis.com/starlark-reference/plan#upload_files
-    config_json = plan.upload_files("./static-files/config.json")
+    service = plan.add_service(name = NAME, config = service_config)
+    endpoint = "http://{}:{}".format(service.hostname, service.ports["server"].number)
 
-    lib.run_hello(plan, config_json)
-
-    postgres.run(plan)
+    return {"service-name": NAME, "endpoint": endpoint}
