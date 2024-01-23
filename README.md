@@ -40,7 +40,7 @@ kurtosis run github.com/kurtosis-tech/dynamodb-package --enclave dynamodb "$(cat
 
 ### Using this in your own package
 
-Kurtosis Packages can be used within other Kurtosis Packages, through what we call composition internally. Assuming you want to spin up etcd and your own service
+Kurtosis Packages can be used within other Kurtosis Packages, through what we call composition internally. Assuming you want to spin up dynamodb and your own service
 together you just need to do the following
 
 ```py
@@ -49,6 +49,6 @@ main_dynamodb_module = import_module("github.com/kurtosis-tech/dynamodb-package/
 # main.star of your dynamodb + Service package
 def run(plan, args):
     plan.print("Spinning up the dynamodb Package")
-    # this will spin up etcd and return the output of the dynamodb package
+    # this will spin up dynamodb and return the output of the dynamodb package
     dynamodb_run_output = main_dynamodb_module.run(plan, args)
 ```
