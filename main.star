@@ -31,4 +31,4 @@ def run(plan):
     service = plan.add_service(name = NAME, config = service_config)
     endpoint = "http://{}:{}".format(service.hostname, service.ports["server"].number)
 
-    return {"service-name": NAME, "endpoint": endpoint}
+    return {"service-name": NAME, "endpoint": endpoint, "hostname": service.hostname, "port": service.ports["server"].number}
